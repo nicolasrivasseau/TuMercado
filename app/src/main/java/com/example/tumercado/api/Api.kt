@@ -1,6 +1,8 @@
 package com.example.tumercado.api
 
-import com.example.tumercado.entity.SearchResult
+import com.example.tumercado.entity.descriptionproduct.DescriptionProduct
+import com.example.tumercado.entity.searchforid.InfoItemId
+import com.example.tumercado.entity.searchforqueary.SearchResult
 import com.google.gson.Gson
 import retrofit2.Callback
 import retrofit2.Retrofit
@@ -20,5 +22,16 @@ class Api {
         productName: String,
         callback: Callback<SearchResult>) {
         getApi().search(productName.replace(" ", "+")).enqueue(callback)
+    }
+    fun searchForId(
+        id: String,
+        callback: Callback<InfoItemId>) {
+        getApi().searchForId(id).enqueue(callback)
+    }
+    fun searchDescription(
+        id: String,
+        callback: Callback<ArrayList<DescriptionProduct>>) {
+        getApi().searchDescription(id).enqueue(callback)
+
     }
 }

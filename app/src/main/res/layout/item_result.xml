@@ -7,7 +7,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:padding="10dp"
-    android:background="@color/colorBackground"
+    android:background="#ffffff"
     android:layout_marginTop="5dp">
 
 
@@ -31,7 +31,7 @@
             android:layout_marginLeft="10dp"
             android:layout_marginTop="10dp"
             android:textStyle="bold"
-            android:textColor="@color/cardview_light_background"/>
+            />
 
         <TextView
             android:id="@+id/precio"
@@ -42,8 +42,19 @@
             android:layout_marginLeft="10dp"
             android:textStyle="bold"
             android:textSize="25sp"
-            android:textColor="@color/cardview_light_background"/>
+            />
+
+        <Button
+            android:id="@+id/details"
+            android:layout_width="100dp"
+            android:layout_height="wrap_content"
+            android:background="#ffffff"
+            android:text="Detalles..."
+            />
+
     </LinearLayout>
+
+
 
 
 </LinearLayout>
