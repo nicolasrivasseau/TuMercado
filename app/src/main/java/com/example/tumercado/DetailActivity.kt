@@ -1,27 +1,31 @@
 package com.example.tumercado
 
 import android.os.Bundle
-import android.util.Log
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.tumercado.adapters.AdapterOfImage
+import com.example.tumercado.adapters.AdapterOfItems
 import com.example.tumercado.api.Api
-import com.example.tumercado.entity.descriptionproduct.DescriptionProduct
+import com.example.tumercado.entity.descriptionproduct.DescriptionItem
 import com.example.tumercado.entity.searchforid.InfoItemId
+import com.example.tumercado.entity.searchforid.Picture
 import com.example.tumercado.entity.searchforqueary.Result
 import com.google.android.material.snackbar.Snackbar
 import com.google.gson.Gson
+import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.activity_detail.*
-import kotlinx.android.synthetic.main.activity_main.*
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import kotlin.properties.Delegates
 
 
 class DetailActivity : AppCompatActivity() {
+    val adapterImage = AdapterOfImage()
 
     private lateinit var item: Result
     private lateinit var itemDescription: InfoItemId
-    private lateinit var productTextDescription: ArrayList<DescriptionProduct>
+    private var productTextDescription = ArrayList<DescriptionItem>()
     private lateinit var id: String
 
 
@@ -29,26 +33,35 @@ class DetailActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_detail)
+        imageProductRecycler.layoutManager =
+            LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
+        imageProductRecycler.adapter = adapterImage
 
 
-
-
-
-        if(intent.extras!!.containsKey(ITEM_PARAM)){
-            item = Gson().fromJson(intent.extras!!.getString(ITEM_PARAM),
-                Result::class.java)
-            id=item.id
-            Log.i(TAG,"Pasa por if")
+        btn_back.setOnClickListener {
+            onBackPressed()
         }
+
+        if (intent.extras!!.containsKey(ITEM_PARAM)) {
+            item = Gson().fromJson(
+                intent.extras!!.getString(ITEM_PARAM),
+                Result::class.java
+            )
+            id = item.id
+        }
+
+
         searchForId(id)
         searchDescription(id)
-        setItemValues()
+
+
     }
+
 
     fun searchForId(id:String){
         Api().searchForId(id,object : Callback<InfoItemId> {
             override fun onFailure(call: Call<InfoItemId>, t: Throwable) {
-                Snackbar.make(mainContainer, "Sin conexion atributos", Snackbar.LENGTH_LONG).show()
+                Snackbar.make(mainDetails, R.string.no_internet, Snackbar.LENGTH_LONG).show()
             }
 
 
@@ -56,8 +69,38 @@ class DetailActivity : AppCompatActivity() {
                 call: Call<InfoItemId>,
                 response: Response<InfoItemId>
             ) {
-                if (response.isSuccessful) {
-                    itemDescription = response.body()!!
+                when (response.code()) {
+                    in 200..299 -> {
+                        var resultado = response.body()
+                        itemDescription = resultado!!
+                        adapterImage.image = resultado?.pictures!!
+                        adapterImage.notifyDataSetChanged()
+                        setItemValues()
+                    }
+                    404 -> Toast.makeText(
+                        this@DetailActivity,
+                        R.string.resource_not_found,
+                        Toast.LENGTH_LONG
+                    )
+                        .show()
+                    400 -> Toast.makeText(
+                        this@DetailActivity,
+                        R.string.bad_request,
+                        Toast.LENGTH_LONG
+                    )
+                        .show()
+                    in 500..599 -> Toast.makeText(
+                        this@DetailActivity,
+                        R.string.server_error,
+                        Toast.LENGTH_LONG
+                    )
+                        .show()
+                    else -> Toast.makeText(
+                        this@DetailActivity,
+                        R.string.unknown_error,
+                        Toast.LENGTH_LONG
+                    )
+                        .show()
                 }
             }
         })
@@ -65,47 +108,69 @@ class DetailActivity : AppCompatActivity() {
 
     }
 
-    fun searchDescription(id:String){
-        Log.i(TAG,"prueba 5")
-        Api().searchDescription(id,object : Callback<ArrayList<DescriptionProduct>> {
-            override fun onFailure(call: Call<ArrayList<DescriptionProduct>>, t: Throwable) {
-
-                Snackbar.make(mainContainer, "Sin conexion descripcion", Snackbar.LENGTH_LONG).show()
-                Log.i(TAG,"Pasa por onFailure")
+    fun searchDescription(id: String) {
+        Api().searchDescription(id, object : Callback<ArrayList<DescriptionItem>> {
+            override fun onFailure(call: Call<ArrayList<DescriptionItem>>, t: Throwable) {
+                Snackbar.make(mainDetails, R.string.no_internet, Snackbar.LENGTH_LONG).show()
             }
 
             override fun onResponse(
-                call: Call<ArrayList<DescriptionProduct>>,
-                response: Response<ArrayList<DescriptionProduct>>
+                call: Call<ArrayList<DescriptionItem>>,
+                response: Response<ArrayList<DescriptionItem>>
             ) {
-                if (response.isSuccessful) {
-                    productTextDescription = response.body()!!
+                when (response.code()) {
+                    in 200..299 -> {
+                        productTextDescription = response.body()!!
+                        setDescription()
+                    }
+                    404 -> Toast.makeText(
+                        this@DetailActivity,
+                        R.string.resource_not_found,
+                        Toast.LENGTH_LONG
+                    )
+                        .show()
+                    400 -> Toast.makeText(
+                        this@DetailActivity,
+                        R.string.bad_request,
+                        Toast.LENGTH_LONG
+                    )
+                        .show()
+                    in 500..599 -> Toast.makeText(
+                        this@DetailActivity,
+                        R.string.server_error,
+                        Toast.LENGTH_LONG
+                    )
+                        .show()
+                    else -> Toast.makeText(
+                        this@DetailActivity,
+                        R.string.unknown_error,
+                        Toast.LENGTH_LONG
+                    )
+                        .show()
                 }
-                Log.i(TAG,"Pasa por onResponse")
             }
         })
-        Log.i(TAG,"Termina funcion")
 
 
     }
-    private fun setItemValues(){
-
-        if(!this::item.isInitialized&&!this::itemDescription.isInitialized&&!this::productTextDescription.isInitialized) return
-
-       /* quantityProduct.text= itemDescription.available_quantity.toString()
-        titleProduct.text= itemDescription.title
-        priceProduct.text= itemDescription.price.toString()*/
-        descriptionProduct.text= productTextDescription[0].descriptionItem[0].toString()
 
 
-        /*Picasso.get()
-            .load(itemDescription.pictures[0].url.replace("http", "https").toString())
-            .placeholder(R.drawable.loading_spinner)
-            .into(imageDetailsProduct)*/
+    private fun setDescription() {
+        descriptionProduct.text = productTextDescription[0].plain_text
     }
-    private val TAG = "Instanciar descripcion"
 
-        companion object{
+
+    private fun setItemValues() {
+
+        if (!this::item.isInitialized) return
+
+        quantityProduct.text = itemDescription.available_quantity.toString()
+        titleProduct.text = itemDescription.title
+        priceProduct.text = "$ ${itemDescription.price.toString()}"
+
+    }
+
+    companion object {
             val ITEM_PARAM="ITEM_PARAM"
         }
 }

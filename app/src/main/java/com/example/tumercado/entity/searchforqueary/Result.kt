@@ -17,7 +17,7 @@ data class Result(
     val official_store_id: Int,
     val original_price: Any?,
     val permalink: String,
-    val price: Int,
+    val price: Double,
     val seller: Seller,
     val seller_address: SellerAddress,
     val shipping: Shipping,

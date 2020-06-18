@@ -7,11 +7,12 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".MainActivity"
+    android:background="#ececec"
     >
 
 
     <com.google.android.material.appbar.MaterialToolbar
-        android:id="@+id/materialToolbar2"
+        android:id="@+id/toolBar"
         android:layout_width="match_parent"
         android:layout_height="78dp"
         android:background="@color/colorPrimary"
@@ -19,25 +20,51 @@
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:titleTextColor="@android:color/white"
-        >
+        app:titleTextColor="@android:color/white">
 
-
-
-        <EditText
-            android:id="@+id/searchProduct"
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginRight="20dp"
             android:padding="10dp"
-            android:ems="10"
-            android:inputType="textPersonName"
-            android:background="@drawable/rouder"
-            android:hint=" Buscar en Mercado Libre..."
-            tools:layout_editor_absoluteX="77dp"
-            tools:layout_editor_absoluteY="14dp"
-            android:imeOptions="actionSearch"
-            android:drawableRight="@drawable/ic_search"/>
+            tools:layout_editor_absoluteX="16dp"
+            tools:layout_editor_absoluteY="7dp">
+
+
+            <EditText
+                android:id="@+id/searchProduct"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/rouder"
+                android:ems="10"
+                android:hint=" Buscar en Mercado Libre..."
+                android:imeOptions="actionSearch"
+                android:lines="1"
+                android:padding="10dp"
+                android:singleLine="true"
+
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintVertical_bias="0.8"
+                android:visibility="gone" />
+
+            <ImageButton
+                android:id="@+id/btn_search"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@null"
+                android:elevation="1dp"
+
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.956"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:srcCompat="@drawable/ic_search" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
 
     </com.google.android.material.appbar.MaterialToolbar>
@@ -49,11 +76,12 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/materialToolbar2"
+        app:layout_constraintTop_toBottomOf="@+id/toolBar"
         tools:itemCount="10"
         tools:listitem="@layout/item_result"
-        />
 
+        android:layout_marginRight="8dp"
+        android:layout_marginLeft="8dp" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

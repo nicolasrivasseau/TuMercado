@@ -1,6 +1,6 @@
 package com.example.tumercado.api
 
-import com.example.tumercado.entity.descriptionproduct.DescriptionProduct
+import com.example.tumercado.entity.descriptionproduct.DescriptionItem
 import com.example.tumercado.entity.searchforid.InfoItemId
 import com.example.tumercado.entity.searchforqueary.SearchResult
 import com.google.gson.Gson
@@ -21,16 +21,20 @@ class Api {
     fun search(
         productName: String,
         callback: Callback<SearchResult>) {
-        getApi().search(productName.replace(" ", "+")).enqueue(callback)
+        getApi().search(productName).enqueue(callback)
     }
+
     fun searchForId(
         id: String,
-        callback: Callback<InfoItemId>) {
+        callback: Callback<InfoItemId>
+    ) {
         getApi().searchForId(id).enqueue(callback)
     }
+
     fun searchDescription(
         id: String,
-        callback: Callback<ArrayList<DescriptionProduct>>) {
+        callback: Callback<ArrayList<DescriptionItem>>
+    ) {
         getApi().searchDescription(id).enqueue(callback)
 
     }

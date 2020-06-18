@@ -12,12 +12,13 @@ import com.example.tumercado.entity.searchforqueary.Result
 import com.squareup.picasso.Picasso
 
 import kotlinx.android.synthetic.main.item_result.view.*
+import java.text.DecimalFormat
 import java.text.NumberFormat
 import java.util.*
 
 class AdapterOfItems(val onDetailsClick: (item: Result) ->Unit):
     RecyclerView.Adapter<AdapterOfItems.ViewHolder>() {
-    var items = ArrayList<Result>()
+    var itemsList = ArrayList<Result>()
 
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -29,16 +30,15 @@ class AdapterOfItems(val onDetailsClick: (item: Result) ->Unit):
     }
 
     override fun getItemCount(): Int {
-        return items.size
+        return itemsList.size
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        items[position].let {item ->
-            holder.itemView.descripcion.text = item.title
-            var format = NumberFormat.getCurrencyInstance(Locale.getDefault())
-            format.setCurrency(Currency.getInstance("ARS"))
-            val price = format.format(item.price)
-            holder.itemView.precio.text = price
+        itemsList[position].let { item ->
+            holder.itemView.title.text = item.title
+            val nformat: NumberFormat = DecimalFormat("##,###,###.##")
+            holder.itemView.precio.text = "$ " + nformat.format(item.price)
+
 
 
             Picasso.get()
@@ -47,7 +47,7 @@ class AdapterOfItems(val onDetailsClick: (item: Result) ->Unit):
                 .into(holder.itemView.imageViewProduct)
 
 
-            holder.itemView.details.setOnClickListener{
+            holder.itemView.setOnClickListener {
                 onDetailsClick(item)
             }
         }

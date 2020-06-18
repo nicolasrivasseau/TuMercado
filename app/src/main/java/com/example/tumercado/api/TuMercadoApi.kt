@@ -1,6 +1,6 @@
 package com.example.tumercado.api
 
-import com.example.tumercado.entity.descriptionproduct.DescriptionProduct
+import com.example.tumercado.entity.descriptionproduct.DescriptionItem
 import com.example.tumercado.entity.searchforid.InfoItemId
 import com.example.tumercado.entity.searchforqueary.SearchResult
 import retrofit2.Call
@@ -16,5 +16,5 @@ interface TuMercadoApi {
     fun searchForId(@Path("id")id:String):Call<InfoItemId>
 
     @GET("items/{id}/descriptions")
-    fun searchDescription(@Path("id")id:String):Call<ArrayList<DescriptionProduct>>
+    fun searchDescription(@Path("id") id: String): Call<ArrayList<DescriptionItem>>
 }
