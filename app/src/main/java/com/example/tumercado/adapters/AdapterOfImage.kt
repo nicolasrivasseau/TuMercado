@@ -29,12 +29,20 @@ class AdapterOfImage() :
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        image[position].let { item ->
-            Picasso.get()
-                .load(item.secure_url)
-                .fit()
-                .placeholder(R.drawable.loading_spinner_details)
-                .into(holder.itemView.imageProduct)
+        if (!image.isEmpty()) {
+            image[position].let { item ->
+                Picasso.get()
+                    .load(item.secure_url)
+                    .fit()
+                    .placeholder(R.drawable.loading_spinner_details)
+                    .into(holder.itemView.imageProduct)
+            }/*}else{//agregar imagen vacia!
+           Picasso.get()
+               .load()
+               .fit()
+               .placeholder(R.drawable.loading_spinner_details)
+               .into(holder.itemView.imageProduct)
+           }*/
 
         }
     }

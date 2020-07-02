@@ -8,4 +8,6 @@
     <string name="resource_not_found">No se encontro el recurso</string>
     <string name="app_name">TuMercado</string>
     <string name="title_description"><u>Descripcion</u></string>
+    <string name="no_se_encontro_resultado">No se encontro resultado</string>
+    <string name="loading">Cargando...</string>
 </resources>

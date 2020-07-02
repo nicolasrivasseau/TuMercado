@@ -3,7 +3,9 @@ package com.example.tumercado
 
 import android.content.Context
 import android.content.Intent
-import android.os.Build
+import android.content.res.Configuration
+import android.net.ConnectivityManager
+import android.net.NetworkInfo
 import android.os.Bundle
 import android.view.KeyEvent
 import android.view.View
@@ -12,7 +14,6 @@ import android.view.animation.Animation
 import android.view.animation.AnimationUtils
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
-import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isGone
 import androidx.recyclerview.widget.GridLayoutManager
@@ -29,7 +30,7 @@ import retrofit2.Response
 
 
 class MainActivity : AppCompatActivity() {
-    val adapter = AdapterOfItems { onDetailsClick(it) }
+    private val adapter = AdapterOfItems { onDetailsClick(it) }
     private var currentSearch: SearchResult? = null
     private var currentSearchTerm: String = ""
 
@@ -38,7 +39,11 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         setTheme(R.style.AppTheme)
         setSupportActionBar(findViewById(R.id.toolBar))
-        itemList.layoutManager = GridLayoutManager(this, 2)
+        if (resources.configuration.orientation == Configuration.ORIENTATION_PORTRAIT) {
+            itemList.layoutManager = GridLayoutManager(this, 2)
+        } else {
+            itemList.layoutManager = GridLayoutManager(this, 3)
+        }
         itemList.adapter = adapter
 
 
@@ -47,9 +52,9 @@ class MainActivity : AppCompatActivity() {
 
 
         searchProduct?.setOnKeyListener((View.OnKeyListener { v, keyCode, event ->
-            hideInput(v)
-            if (keyCode == KeyEvent.KEYCODE_ENTER && event.action == KeyEvent.ACTION_UP) {
 
+            if (keyCode == KeyEvent.KEYCODE_ENTER && event.action == KeyEvent.ACTION_UP) {
+                hideInput(v)
                 search(searchProduct.text.toString())
                 return@OnKeyListener true
             }
@@ -80,53 +85,88 @@ class MainActivity : AppCompatActivity() {
         searchProduct.setText(currentSearchTerm)
     }
 
-    fun search(productName: String) {
-        if (productName != "") {
-            Api().search(productName, object : Callback<SearchResult> {
-                override fun onFailure(call: Call<SearchResult>, t: Throwable) {
-                    Snackbar.make(mainContainer, R.string.no_internet, Snackbar.LENGTH_LONG)
-                        .show()
-                }
+    private fun isConnected(): Boolean {
+        val cm = this.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val activeNetwork: NetworkInfo? = cm.activeNetworkInfo
 
-                override fun onResponse(
-                    call: Call<SearchResult>,
-                    response: Response<SearchResult>
-                ) {
-                    when (response.code()) {
-                        in 200..299 -> {
-                            var resultado = response.body()
-                            adapter.itemsList = resultado?.results!!
-                            currentSearch = response.body()!!
-                            adapter.notifyDataSetChanged()
-                        }
-                        404 -> Toast.makeText(
-                            this@MainActivity,
-                            R.string.resource_not_found,
-                            Toast.LENGTH_LONG
-                        )
-                            .show()
-                        400 -> Toast.makeText(
-                            this@MainActivity,
-                            R.string.bad_request,
-                            Toast.LENGTH_LONG
-                        )
-                            .show()
-                        in 500..599 -> Toast.makeText(
-                            this@MainActivity,
-                            R.string.server_error,
-                            Toast.LENGTH_LONG
-                        )
-                            .show()
-                        else -> Toast.makeText(
-                            this@MainActivity,
-                            R.string.unknown_error,
-                            Toast.LENGTH_LONG
-                        )
+        return activeNetwork?.isConnectedOrConnecting == true
+    }
+
+    private fun search(productName: String) {
+        var loading = Snackbar.make(mainContainer, R.string.loading, Snackbar.LENGTH_INDEFINITE)
+
+        if (isConnected()) {
+            loading.show()
+            if (productName != "") {
+                Api().search(productName, object : Callback<SearchResult> {
+                    override fun onFailure(call: Call<SearchResult>, t: Throwable) {
+                        loading.dismiss()
+                        Snackbar.make(mainContainer, R.string.unknown_error, Snackbar.LENGTH_LONG)
                             .show()
                     }
-                }
 
-            })
+                    override fun onResponse(
+                        call: Call<SearchResult>,
+                        response: Response<SearchResult>
+                    ) {
+                        when (response.code()) {
+                            in 200..299 -> {
+                                if (response.body()?.results?.isEmpty()!!) {
+                                    loading.dismiss()
+                                    Toast.makeText(
+                                        this@MainActivity,
+                                        R.string.no_se_encontro_resultado,
+                                        Toast.LENGTH_LONG
+                                    ).show()
+                                } else {
+                                    loading.dismiss()
+                                    var resultado = response.body()
+                                    adapter.itemsList = resultado?.results!!
+                                    currentSearch = response.body()!!
+                                    adapter.notifyDataSetChanged()
+                                }
+                            }
+                            404 -> {
+                                loading.dismiss()
+                                Toast.makeText(
+                                    this@MainActivity,
+                                    R.string.resource_not_found,
+                                    Toast.LENGTH_LONG
+                                ).show()
+                            }
+                            400 -> {
+                                loading.dismiss()
+                                Toast.makeText(
+                                    this@MainActivity,
+                                    R.string.bad_request,
+                                    Toast.LENGTH_LONG
+                                ).show()
+                            }
+                            in 500..599 -> {
+                                loading.dismiss()
+                                Toast.makeText(
+                                    this@MainActivity,
+                                    R.string.server_error,
+                                    Toast.LENGTH_LONG
+                                ).show()
+                            }
+                            else -> {
+                                loading.dismiss()
+                                Toast.makeText(
+                                    this@MainActivity,
+                                    R.string.unknown_error,
+                                    Toast.LENGTH_LONG
+                                ).show()
+                            }
+                        }
+                    }
+
+                })
+            }
+        } else {
+            loading.dismiss()
+            Snackbar.make(mainContainer, R.string.no_internet, Snackbar.LENGTH_LONG)
+                .show()
         }
     }
 
@@ -148,13 +188,13 @@ class MainActivity : AppCompatActivity() {
         adapter.notifyDataSetChanged()
     }
 
-    fun hideInput(v: View) {
+    private fun hideInput(v: View) {
         val inputMethod: InputMethodManager =
             getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
         inputMethod.hideSoftInputFromWindow(v.applicationWindowToken, 0)
     }
 
-    fun searchBar() {
+    private fun searchBar() {
         if (searchProduct.isGone) {
             val animation: Animation = AnimationUtils.loadAnimation(this, R.anim.show)
             searchProduct.startAnimation(animation)
@@ -172,11 +212,11 @@ class MainActivity : AppCompatActivity() {
         startActivity(intent)
     }
 
-    companion object {
-        val TAG = MainActivity::class.simpleName
+
+    val TAG = MainActivity::class.simpleName
         val CURRENT_SEARCH_KEY = "CURRENT_SEARCH_KEY"
         val CURRENT_SEARCH_TERM = "CURRENT_SEARCH_TERM"
     }
-}
+
 
 
